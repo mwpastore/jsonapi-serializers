@@ -109,10 +109,11 @@ module JSONAPI
         # Merge in data for has_one relationships.
         has_one_relationships.each do |attribute_name, attr_data|
           formatted_attribute_name = format_name(attribute_name)
+          include_linkage = @_include_linkages.include?(formatted_attribute_name)
 
           data[formatted_attribute_name] = {}
 
-          if attr_data[:options][:include_links]
+          if !include_linkage && attr_data[:options][:include_links]
             links_self = relationship_self_link(attribute_name)
             links_related = relationship_related_link(attribute_name)
             data[formatted_attribute_name]['links'] = {} if links_self || links_related
@@ -120,7 +121,7 @@ module JSONAPI
             data[formatted_attribute_name]['links']['related'] = links_related if links_related
           end
 
-          if @_include_linkages.include?(formatted_attribute_name) || attr_data[:options][:include_data]
+          if include_linkage || attr_data[:options][:include_data]
             object = has_one_relationship(attribute_name, attr_data)
             if object.nil?
               # Spec: Resource linkage MUST be represented as one of the following:
@@ -140,10 +141,11 @@ module JSONAPI
         # Merge in data for has_many relationships.
         has_many_relationships.each do |attribute_name, attr_data|
           formatted_attribute_name = format_name(attribute_name)
+          include_linkage = @_include_linkages.include?(formatted_attribute_name)
 
           data[formatted_attribute_name] = {}
 
-          if attr_data[:options][:include_links]
+          if !include_linkage && attr_data[:options][:include_links]
             links_self = relationship_self_link(attribute_name)
             links_related = relationship_related_link(attribute_name)
             data[formatted_attribute_name]['links'] = {} if links_self || links_related
